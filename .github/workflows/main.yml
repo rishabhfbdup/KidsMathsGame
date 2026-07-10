@@ -24,6 +24,7 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython
 
+      # Google ke naye cmdline-tools aur sdkmanager path ko pehle se setup karna
       - name: Setup Missing Android SDK Tools
         run: |
           mkdir -p /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
@@ -36,7 +37,7 @@ jobs:
           ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
           yes | /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Inject Pygame-Specific Configuration
+      - name: Inject Pygame Working Configuration
         run: |
           rm -f buildozer.spec
           cat << 'EOF' > buildozer.spec
@@ -47,11 +48,9 @@ jobs:
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas,ttf,wav,mp3
           version = 0.1
-          # Pygame ke liye special requirements aur services entry
-          requirements = python3,pygame==2.5.2,kivy==2.3.0,hostpython3
+          requirements = python3,pygame,kivy,android,jnius
           orientation = portrait
           fullscreen = 1
-          # Pygame single architecture par sabse stable chalta hai
           android.archs = arm64-v8a
           android.api = 33
           android.minapi = 21
@@ -60,6 +59,18 @@ jobs:
           android.ndk = 25b
           EOF
 
+      # CRITICAL FIXED STEP: Git safety restrictions ko poori tarah bypass karna
+      - name: Configure Git Safe Directory
+        run: |
+          git config --global --add safe.directory /home/runner/work/KidsMathsGame/KidsMathsGame
+          git config --global --add safe.directory '*'
+
       - name: Build with Buildozer
         run: |
           buildozer -v android debug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-APK
+          path: bin/*.apk
