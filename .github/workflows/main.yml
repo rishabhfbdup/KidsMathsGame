@@ -36,7 +36,7 @@ jobs:
           ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
           yes | /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Inject Pygame Version-Fixed Configuration
+      - name: Inject Stable Python Configuration
         run: |
           rm -f buildozer.spec
           cat << 'EOF' > buildozer.spec
@@ -48,10 +48,11 @@ jobs:
           source.include_exts = py,png,jpg,kv,atlas,ttf,wav,mp3
           version = 0.1
           
-          # Stable Android-Pygame Requirements
-          requirements = python3,pygame==2.5.2,kivy==2.3.0,android
+          # Stable standard Python architecture lock karna
+          requirements = python3==3.11.5,pygame==2.5.2,kivy==2.3.0,android
           
           p4a.bootstrap = sdl2
+          p4a.branch = master
           orientation = portrait
           fullscreen = 1
           android.archs = arm64-v8a
@@ -69,5 +70,4 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Bina crash huye buildozer script ko strict parameters par run karna
           buildozer -v android debug
