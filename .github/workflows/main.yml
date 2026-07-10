@@ -22,7 +22,7 @@ jobs:
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install buildozer cython
+          pip install "buildozer==1.5.0" cython # Stable Buildozer core version lock
 
       - name: Setup Missing Android SDK Tools
         run: |
@@ -36,7 +36,7 @@ jobs:
           ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
           yes | /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Inject Stable Python Configuration
+      - name: Inject Clean Pygame Configuration
         run: |
           rm -f buildozer.spec
           cat << 'EOF' > buildozer.spec
@@ -48,11 +48,10 @@ jobs:
           source.include_exts = py,png,jpg,kv,atlas,ttf,wav,mp3
           version = 0.1
           
-          # Stable standard Python architecture lock karna
-          requirements = python3==3.11.5,pygame==2.5.2,kivy==2.3.0,android
+          # Requirements bina kisi version confusion ke
+          requirements = python3,pygame,kivy,android
           
           p4a.bootstrap = sdl2
-          p4a.branch = master
           orientation = portrait
           fullscreen = 1
           android.archs = arm64-v8a
@@ -70,4 +69,6 @@ jobs:
 
       - name: Build with Buildozer
         run: |
+          # Fresh environment clear karke strict compile run karna
+          buildozer android clean
           buildozer -v android debug
