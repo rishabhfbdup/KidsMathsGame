@@ -24,16 +24,26 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython
 
-      # GitHub par pehle se maujood licenses ko forced accept karna
-      - name: Pre-accept Android Licenses
+      - name: Inject Full Configuration & Force Accept Licenses
         run: |
-          yes | sdkmanager --licenses || true
+          # Adhoori config ki jagah automatic poori parameters force options ke sath inject karna
+          sed -i 's/.*android.accept_licenses.*/android.accept_licenses = True/' buildozer.spec || echo "android.accept_licenses = True" >> buildozer.spec
+          
+          # Android environment variables ko update aur accept karwana
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          
+          # SDK Tools setup karke force update lagana
+          export ANDROID_HOME=/home/runner/.buildozer/android/platform/android-sdk
+          yes | buildozer android pms --create-buildozer-dir || true
 
       - name: Build with Buildozer
-        env:
-          # GitHub system ke default SDK aur NDK ka exact path Buildozer ko de rahe hain
-          ANDROID_HOME: /usr/local/lib/android/sdk
-          ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk-bundle
         run: |
-          # Buildozer ko forced parameters ke sath run kar rahe hain
+          # Dynamic terminal support ke sath build ko run karna
           buildozer -v android debug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Android-APK
+          path: bin/*.apk
