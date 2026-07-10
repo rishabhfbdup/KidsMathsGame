@@ -24,34 +24,33 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython
 
-      # GitHub ke built-in Android SDK tools se sabhi licenses pehle hi forced accept karna
-      - name: Force Accept Android Licenses & Setup Paths
+      # Google ke naye cmdline-tools aur sdkmanager path ko pehle se setup karna
+      - name: Setup Missing Android SDK Tools
         run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
+          cd /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
           
-          # Buildozer ki default target folders pehle se banana
-          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/licenses
+          # Official stable command-line tools download karna
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip commandlinetools-linux-9477386_latest.zip
+          mv cmdline-tools latest
+          rm commandlinetools-linux-9477386_latest.zip
           
-          # GitHub system ke sdkmanager se forced licenses accept karke Buildozer me copy karna
-          if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
-            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-            cp -r $ANDROID_HOME/licenses/* /home/runner/.buildozer/android/platform/android-sdk/licenses/ || true
-          elif [ -d "$ANDROID_HOME/tools/bin" ]; then
-            yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
-            cp -r $ANDROID_HOME/licenses/* /home/runner/.buildozer/android/platform/android-sdk/licenses/ || true
-          fi
+          # Purane tools path ke liye symlink banana taaki Buildozer confuse na ho
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin
+          ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
+          
+          # Licenses auto-accept karna
+          yes | /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Inject Clean Configuration
         run: |
           rm -f buildozer.spec
           buildozer init
-          
-          # buildozer.spec me basic requirements fix karna
           sed -i 's/^requirements =.*/requirements = python3,pygame,hostpython3/' buildozer.spec
           sed -i 's/^title =.*/title = Kids Maths Game/' buildozer.spec
+          echo "android.accept_licenses = True" >> buildozer.spec
 
       - name: Build with Buildozer
         run: |
-          # Bina license verification ke seedhe application compile hogi
           buildozer -v android debug
