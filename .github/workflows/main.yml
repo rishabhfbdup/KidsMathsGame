@@ -19,10 +19,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev libsqlite3-dev tk-dev libgdbm-compat-dev liblzma-dev lzma
 
-      - name: Install Buildozer
+      # Stable dependencies compile options ke sath lock karna
+      - name: Install Stable Buildozer & Cython
         run: |
           pip install --upgrade pip
-          pip install buildozer cython
+          pip install "cython<3.0.0" "buildozer==1.5.0"
 
       - name: Setup Missing Android SDK Tools
         run: |
@@ -36,7 +37,7 @@ jobs:
           ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
           yes | /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Inject Clean Pygame Configuration
+      - name: Inject Pygame Bootstrap Configuration
         run: |
           rm -f buildozer.spec
           cat << 'EOF' > buildozer.spec
@@ -47,7 +48,10 @@ jobs:
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas,ttf,wav,mp3
           version = 0.1
+          
+          # Stable standard parameters lock
           requirements = python3,pygame,kivy,android
+          
           p4a.bootstrap = sdl2
           orientation = portrait
           fullscreen = 1
@@ -66,5 +70,5 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Bina kisi adhoore clean command ke fresh trigger
+          # Fresh execution logic setting target
           buildozer -v android debug
