@@ -24,14 +24,16 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython
 
-      # Adhoori buildozer.spec ko hatakar automatic fully configured setup generate karna
+      # Config files me se duplicate options hatakar ekdam clean update karna
       - name: Inject Full Configuration & Auto-Accept Licenses
         run: |
           rm -f buildozer.spec
           buildozer init
-          sed -i 's/.*android.accept_licenses.*/android.accept_licenses = 1/' buildozer.spec
-          sed -i 's/.*requirements =.*/requirements = python3,pygame,hostpython3/' buildozer.spec
-          sed -i 's/.*title =.*/title = Kids Maths Game/' buildozer.spec
+          
+          # Exact matching ke sath configuration lines ko overwrite karna
+          sed -i 's/^#\? \?android.accept_licenses =.*/android.accept_licenses = 1/' buildozer.spec
+          sed -i 's/^requirements =.*/requirements = python3,pygame,hostpython3/' buildozer.spec
+          sed -i 's/^title =.*/title = Kids Maths Game/' buildozer.spec
           
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
