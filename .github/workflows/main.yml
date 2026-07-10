@@ -47,13 +47,8 @@ jobs:
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas,ttf,wav,mp3
           version = 0.1
-          
-          # PYGAME CRITICAL REQUIREMENTS
           requirements = python3,pygame,kivy,android
-          
-          # BOOTSTRAP BACKEND FOR PYGAME RUNTIME
           p4a.bootstrap = sdl2
-          
           orientation = portrait
           fullscreen = 1
           android.archs = arm64-v8a
@@ -62,6 +57,9 @@ jobs:
           android.ndk_api = 21
           android.accept_licenses = True
           android.ndk = 25b
+          
+          # GitHub limits ke liye log level aur printing control karna
+          log_level = 1
           EOF
 
       - name: Configure Git Safe Directory
@@ -71,10 +69,5 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          buildozer -v android debug
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Android-APK
-          path: bin/*.apk
+          # Faltu ki debugging outputs ko chup karke standard packaging run karna
+          buildozer android debug
