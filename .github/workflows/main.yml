@@ -29,27 +29,37 @@ jobs:
         run: |
           mkdir -p /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
           cd /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools
-          
-          # Official stable command-line tools download karna
           wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip commandlinetools-linux-9477386_latest.zip
           mv cmdline-tools latest
           rm commandlinetools-linux-9477386_latest.zip
           
-          # Purane tools path ke liye symlink banana taaki Buildozer confuse na ho
           mkdir -p /home/runner/.buildozer/android/platform/android-sdk/tools/bin
           ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
-          
-          # Licenses auto-accept karna
           yes | /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Inject Clean Configuration
+      # Adhoori config ki jagah ek full stack clean architecture file generate karna
+      - name: Inject Complete Fixed Configuration
         run: |
           rm -f buildozer.spec
-          buildozer init
-          sed -i 's/^requirements =.*/requirements = python3,pygame,hostpython3/' buildozer.spec
-          sed -i 's/^title =.*/title = Kids Maths Game/' buildozer.spec
-          echo "android.accept_licenses = True" >> buildozer.spec
+          cat << 'EOF' > buildozer.spec
+          [app]
+          title = Kids Maths Game
+          package.name = kidsmathsgame
+          package.domain = org.test
+          source.dir = .
+          source.include_exts = py,png,jpg,kv,atlas
+          version = 0.1
+          requirements = python3,pygame,hostpython3
+          orientation = portrait
+          fullscreen = 1
+          android.archs = arm64-v8a, armeabi-v7a
+          android.api = 33
+          android.minapi = 24
+          android.ndk_api = 24
+          android.accept_licenses = True
+          android.ndk = 25b
+          EOF
 
       - name: Build with Buildozer
         run: |
