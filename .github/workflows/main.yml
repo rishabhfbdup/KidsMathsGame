@@ -22,7 +22,7 @@ jobs:
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install "buildozer==1.5.0" cython # Stable Buildozer core version lock
+          pip install buildozer cython
 
       - name: Setup Missing Android SDK Tools
         run: |
@@ -47,10 +47,7 @@ jobs:
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas,ttf,wav,mp3
           version = 0.1
-          
-          # Requirements bina kisi version confusion ke
           requirements = python3,pygame,kivy,android
-          
           p4a.bootstrap = sdl2
           orientation = portrait
           fullscreen = 1
@@ -69,6 +66,5 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Fresh environment clear karke strict compile run karna
-          buildozer android clean
+          # Bina kisi adhoore clean command ke fresh trigger
           buildozer -v android debug
