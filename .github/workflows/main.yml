@@ -24,24 +24,34 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython
 
-      # Config setup jo bina kisi error ke har setting inject karega
+      # GitHub ke built-in Android SDK tools se sabhi licenses pehle hi forced accept karna
+      - name: Force Accept Android Licenses & Setup Paths
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          
+          # Buildozer ki default target folders pehle se banana
+          mkdir -p /home/runner/.buildozer/android/platform/android-sdk/licenses
+          
+          # GitHub system ke sdkmanager se forced licenses accept karke Buildozer me copy karna
+          if [ -d "$ANDROID_HOME/cmdline-tools/latest/bin" ]; then
+            yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+            cp -r $ANDROID_HOME/licenses/* /home/runner/.buildozer/android/platform/android-sdk/licenses/ || true
+          elif [ -d "$ANDROID_HOME/tools/bin" ]; then
+            yes | $ANDROID_HOME/tools/bin/sdkmanager --licenses || true
+            cp -r $ANDROID_HOME/licenses/* /home/runner/.buildozer/android/platform/android-sdk/licenses/ || true
+          fi
+
       - name: Inject Clean Configuration
         run: |
           rm -f buildozer.spec
           buildozer init
           
-          # Pehle se maujood configuration settings ko customize karna
+          # buildozer.spec me basic requirements fix karna
           sed -i 's/^requirements =.*/requirements = python3,pygame,hostpython3/' buildozer.spec
           sed -i 's/^title =.*/title = Kids Maths Game/' buildozer.spec
-          
-          # Pure license process ko pipeline ke andar bypass karne ke liye variable force add karna
-          echo "android.accept_licenses = True" >> buildozer.spec
 
-      - name: Build with Buildozer (Forced Pass)
+      - name: Build with Buildozer
         run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          
-          # Buildozer run karte waqt environment options se forced binary call karna
-          export BUILDOZER_ALLOW_KIVY_NEW_DESIGN=1
+          # Bina license verification ke seedhe application compile hogi
           buildozer -v android debug
