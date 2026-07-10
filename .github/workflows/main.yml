@@ -36,7 +36,7 @@ jobs:
           ln -s /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager /home/runner/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
           yes | /home/runner/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
-      - name: Inject Pygame Bootstrap Configuration
+      - name: Inject Pygame Version-Fixed Configuration
         run: |
           rm -f buildozer.spec
           cat << 'EOF' > buildozer.spec
@@ -47,7 +47,10 @@ jobs:
           source.dir = .
           source.include_exts = py,png,jpg,kv,atlas,ttf,wav,mp3
           version = 0.1
-          requirements = python3,pygame,kivy,android
+          
+          # Stable Android-Pygame Requirements
+          requirements = python3,pygame==2.5.2,kivy==2.3.0,android
+          
           p4a.bootstrap = sdl2
           orientation = portrait
           fullscreen = 1
@@ -57,9 +60,6 @@ jobs:
           android.ndk_api = 21
           android.accept_licenses = True
           android.ndk = 25b
-          
-          # GitHub limits ke liye log level aur printing control karna
-          log_level = 1
           EOF
 
       - name: Configure Git Safe Directory
@@ -69,5 +69,5 @@ jobs:
 
       - name: Build with Buildozer
         run: |
-          # Faltu ki debugging outputs ko chup karke standard packaging run karna
-          buildozer android debug
+          # Bina crash huye buildozer script ko strict parameters par run karna
+          buildozer -v android debug
